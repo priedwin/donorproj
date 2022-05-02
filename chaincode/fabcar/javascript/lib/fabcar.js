@@ -1,6 +1,4 @@
 /*
- * Copyright IBM Corp. All Rights Reserved.
- *
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -12,74 +10,7 @@ class FabCar extends Contract {
 
     async initLedger(ctx) {
         console.info('============= START : Initialize Ledger ===========');
-        const cars = [
-            {
-                color: 'blue',
-                make: 'Toyota',
-                model: 'Prius',
-                owner: 'Tomoko',
-            },
-            {
-                color: 'red',
-                make: 'Ford',
-                model: 'Mustang',
-                owner: 'Brad',
-            },
-            {
-                color: 'green',
-                make: 'Hyundai',
-                model: 'Tucson',
-                owner: 'Jin Soo',
-            },
-            {
-                color: 'yellow',
-                make: 'Volkswagen',
-                model: 'Passat',
-                owner: 'Max',
-            },
-            {
-                color: 'black',
-                make: 'Tesla',
-                model: 'S',
-                owner: 'Adriana',
-            },
-            {
-                color: 'purple',
-                make: 'Peugeot',
-                model: '205',
-                owner: 'Michel',
-            },
-            {
-                color: 'white',
-                make: 'Chery',
-                model: 'S22L',
-                owner: 'Aarav',
-            },
-            {
-                color: 'violet',
-                make: 'Fiat',
-                model: 'Punto',
-                owner: 'Pari',
-            },
-            {
-                color: 'indigo',
-                make: 'Tata',
-                model: 'Nano',
-                owner: 'Valeria',
-            },
-            {
-                color: 'brown',
-                make: 'Holden',
-                model: 'Barina',
-                owner: 'Shotaro',
-            },
-        ];
-
-        for (let i = 0; i < cars.length; i++) {
-            cars[i].docType = 'car';
-            await ctx.stub.putState('CAR' + i, Buffer.from(JSON.stringify(cars[i])));
-            console.info('Added <--> ', cars[i]);
-        }
+       
         console.info('============= END : Initialize Ledger ===========');
     }
 
@@ -107,23 +38,125 @@ class FabCar extends Contract {
         console.info('============= END : Create Car ===========');
     }
 
-    async queryAllCars(ctx) {
-        const startKey = '';
-        const endKey = '';
-        const allResults = [];
-        for await (const {key, value} of ctx.stub.getStateByRange(startKey, endKey)) {
-            const strValue = Buffer.from(value).toString('utf8');
-            let record;
-            try {
-                record = JSON.parse(strValue);
-            } catch (err) {
-                console.log(err);
-                record = strValue;
-            }
-            allResults.push({ Key: key, Record: record });
+    async createDonationDetails(ctx,bbid,donorid,transactionstring,bloodgroup,unit,cdate,edate,collectedby) {
+        console.info('============= START : Create Donation Details ===========');
+        let flag=true
+        let todaynow=new Date().toLocaleTimeString();
+       let transactionstring1 = JSON.parse(transactionstring.toString());
+       let hg = parseFloat(transactionstring1.hg)
+        let temp=parseFloat(transactionstring1.temp)
+        let bps=parseInt(transactionstring1.bps)
+        let bpd=parseInt(transactionstring1.bpd)
+        let pulse=parseInt(transactionstring1.pulse)
+        let hist_verified=transactionstring1.historyverified
+        if(hg<12.5)
+        {
+        flag=false
         }
-        console.info(allResults);
-        return JSON.stringify(allResults);
+        if(temp>99)
+        {
+        flag=false
+        }
+        if(bps>160 || bpd>100)
+        {
+        flag=false
+        }
+        if(pulse>100 || pulse<60)
+        {
+        flag=false
+        }
+        if(hist_verified != 'yes')
+        {
+        flag=false
+        }
+        console.log("flag",flag);
+        if(flag)
+        {
+            const donorcollection = {
+                donorid:donorid,
+                donordetails: transactionstring,
+                bloodgroup: bloodgroup,
+                unit:unit,
+                collecteddate:cdate,
+                expirydate:edate,
+                collectedby:collectedby,
+            };
+        await ctx.stub.putState(bbid, Buffer.from(JSON.stringify(donorcollection)));
+        console.info('============= END : Create Donation Details ===========');
+        }
+        else
+        {
+            throw new Error(`Cannot store the details`);
+        }
+    }
+
+    async createDonorRegDetails(ctx, donorid,donorstring) {
+             console.info('============= START : Create Donation Details ===========');
+
+            let donorstring1 = JSON.parse(donorstring.toString());
+
+             let flag=true
+             if(flag)
+             {
+                const donordetail = {
+                    donorstring:donorstring, 
+                };
+             await ctx.stub.putState(donorid, Buffer.from(JSON.stringify(donordetail)));
+             console.info('============= END : Create Donor Details ===========');
+             }
+             else
+             {
+                 throw new Error(`Cannot store the details`);
+             }
+         }
+    async queryDonationDetails(ctx, bbid) {
+        const donationBytes = await ctx.stub.getState(bbid); // get the car from chaincode state
+        if (!donationBytes || donationBytes.length === 0) {
+            throw new Error(`${bbid} does not exist`);
+        }
+        console.log(donationBytes.toString());
+        return donationBytes.toString();
+    }
+
+    async queryDonorRegDetails(ctx, donorid) {
+        const donationBytes = await ctx.stub.getState(donorid); // get the donor from chaincode state
+        if (!donationBytes || donationBytes.length === 0) {
+            throw new Error(`${donorid} does not exist`);
+        }
+        console.log(donationBytes.toString());
+        return donationBytes.toString();
+    }
+
+    async queryAllCars(ctx) {
+        const startKey = 'CAR0';
+        const endKey = 'CAR999';
+
+        const iterator = await ctx.stub.getStateByRange(startKey, endKey);
+
+        const allResults = [];
+        while (true) {
+            const res = await iterator.next();
+
+            if (res.value && res.value.value.toString()) {
+                console.log(res.value.value.toString('utf8'));
+
+                const Key = res.value.key;
+                let Record;
+                try {
+                    Record = JSON.parse(res.value.value.toString('utf8'));
+                } catch (err) {
+                    console.log(err);
+                    Record = res.value.value.toString('utf8');
+                }
+                allResults.push({ Key, Record });
+            }
+            if (res.done) {
+                console.log('end of data');
+                await iterator.close();
+                console.info(allResults);
+                return JSON.stringify(allResults);
+            }
+        }
     }
 
     async changeCarOwner(ctx, carNumber, newOwner) {
