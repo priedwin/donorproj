@@ -44,7 +44,11 @@ async function getDonationDetails(bbid) {
         // queryCar transaction - requires 1 argument, ex: ('queryCar', 'CAR4')
         // queryAllCars transaction - requires no arguments, ex: ('queryAllCars')
         const result = await contract.evaluateTransaction('queryDonationDetails', bbid);
-        console.log(`Transaction has been evaluated, result is: ${result.toString()}`);
+        console.log("=================================================================================");
+
+        console.log(`Blood Donation Details: ${result.toString()}`);
+
+        console.log("=================================================================================");
 
         // Disconnect from the gateway.
         await gateway.disconnect();

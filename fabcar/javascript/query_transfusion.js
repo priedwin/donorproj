@@ -11,7 +11,7 @@ const path = require('path');
 const fs = require('fs');
 
 
-async function getDonorDetails(donorid) {
+async function getBloodTransfusionDetails(bbid) {
     try {
         // load the network configuration
         const ccpPath = path.resolve(__dirname, '..', '..', 'test-network', 'organizations', 'peerOrganizations', 'org1.example.com', 'connection-org1.json');
@@ -43,15 +43,9 @@ async function getDonorDetails(donorid) {
         // Evaluate the specified transaction.
         // queryCar transaction - requires 1 argument, ex: ('queryCar', 'CAR4')
         // queryAllCars transaction - requires no arguments, ex: ('queryAllCars')
-        const result = await contract.evaluateTransaction('queryDonorRegDetails', donorid);
+        const result = await contract.evaluateTransaction('queryTransfusion', bbid);
+        console.log(`Transaction has been evaluated, result is: ${result.toString()}`);
 
-        console.log("=================================================================================");
-
-        console.log(`Donor Details: ${result.toString()}`);
-       
-        console.log("=================================================================================");
-
-        return result;
         // Disconnect from the gateway.
         await gateway.disconnect();
         
@@ -63,5 +57,5 @@ async function getDonorDetails(donorid) {
 
 
 module.exports = {
-    getDonorDetails
+    getBloodTransfusionDetails
 }

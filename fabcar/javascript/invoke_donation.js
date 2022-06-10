@@ -42,6 +42,7 @@ async function saveDonationDetails(params) {
         // Submit the specified transaction.
         // createCar transaction - requires 5 argument, ex: ('createCar', 'CAR12', 'Honda', 'Accord', 'Black', 'Tom')
         // changeCarOwner transaction - requires 2 args , ex: ('changeCarOwner', 'CAR12', 'Dave')
+        
         await contract.submitTransaction('createDonationDetails', params.bbid,params.donorid,params.transactionstring,params.bloodgroup,params.unit,params.cdate,params.expirydate,params.collectedby);      
         console.log('Transaction has been submitted');
 

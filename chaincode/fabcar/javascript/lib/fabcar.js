@@ -8,9 +8,94 @@ const { Contract } = require('fabric-contract-api');
 
 class FabCar extends Contract {
 
+    async keyExists(ctx, key) {
+        const buffer = await ctx.stub.getState(key);
+       return (!!buffer && buffer.length > 0);
+      }
+
     async initLedger(ctx) {
         console.info('============= START : Initialize Ledger ===========');
        
+        const donors =[
+            {
+             "lastdonated": "05-09-2022",
+             "bloodbanks": ["BB1"],
+             "donorname": "M. Marudhupandi",
+             "age": 33,
+             "gender": "M",
+             "weight": 73,
+             "bloodgroup": "O+",
+             "City": "Thirumangalam",
+             "email": null,
+             "Phone": "9894755616",
+             "willingflag": "TRUE",
+             "selffitflag": true
+            },
+            {
+             "lastdonated": "05-09-2022",
+             "bloodbanks": ["BB1"],
+             "donorname": "G Vignesh",
+             "age": 25,
+             "gender": "M",
+             "weight": 55,
+             "bloodgroup": "O+",
+             "City": "Satthur",
+             "email": null,
+             "Phone": "9843843332",
+             "willingflag": "TRUE",
+             "selffitflag": true
+            },
+            {
+             "lastdonated": "05-09-2022",
+             "bloodbanks": ["BB1"],
+             "donorname": "M. Sundaramoorthy",
+             "age": 21,
+             "gender": "M",
+             "weight": 54,
+             "bloodgroup": "B+",
+             "City": "Virudhunagar",
+             "email": null,
+             "Phone": "6374913828",
+             "willingflag": "TRUE",
+             "selffitflag": true
+            },
+            {
+             "lastdonatedby": "05-10-2022",
+             "bloodbanks": ["BB1"],
+             "donorname": "K.S. Karthikeyan",
+             "age": 21,
+             "gender": "M",
+             "weight": 65,
+             "bloodgroup": "O+",
+             "City": "Virudhunagar",
+             "email": null,
+             "Phone": "7904507703",
+             "willingflag": "TRUE",
+             "selffitflag": true
+            },
+            {
+             "lastdonatedby": "05-10-2022",
+             "bloodbanks": ["BB1"],
+             "donorname": "S. Alagumahikannan",
+             "age": 25,
+             "gender": "M",
+             "weight": 58,
+             "bloodgroup": "AB+",
+             "City": "Virudhunagar",
+             "email": null,
+             "Phone": "8946007961",
+             "willingflag": "TRUE",
+             "selffitflag": true
+            },
+
+           ];
+           const donorids= ["D001","D002","D003","D004","D005"];
+           
+            for (let i = 0; i < donors.length; i++) {
+                       await ctx.stub.putState(donorids[i], Buffer.from(JSON.stringify(donors[i])));
+           
+                   }
+           
         console.info('============= END : Initialize Ledger ===========');
     }
 
@@ -38,6 +123,56 @@ class FabCar extends Contract {
         console.info('============= END : Create Car ===========');
     }
 
+    async createDonorRegDetails(ctx, donorid,lastdonated,bloodbanks,donorstring) {
+        console.info('============= START : Create Donation Details ===========');
+
+       let donorstring1 = JSON.parse(donorstring.toString());
+
+        let flag=true
+        if(flag)
+        {
+           const donordetail = {
+               lastdonated:lastdonated,
+               bloodbanks:bloodbanks,
+               donorname:donorstring1.donorname,
+               email:donorstring1.email,
+               phone:donorstring1.phone,
+               dob:donorstring1.dob,
+               gender:donorstring1.gender,
+               bloodgroup:donorstring1.bloodgroup,
+               willingflag:donorstring1.willingflag,
+               selffitflag:donorstring1.selffitflag,
+               city:donorstring1.city,
+               weight:donorstring1.weight,
+           };
+        await ctx.stub.putState(donorid, Buffer.from(JSON.stringify(donordetail)));
+        console.info('============= END : Create Donor Details ===========');
+        }
+        else
+        {
+            throw new Error(`Cannot store the details`);
+        }
+    }
+
+    async saveDonorBloodBagDetails(ctx, donorbank,donorbag) {
+        console.info('============= START : Create Donor-Bank Bag Details ===========');
+
+
+        let flag=true
+        if(flag)
+        {
+           const donordetail = {
+            bloodbags:donorbag,
+           };
+        await ctx.stub.putState(donorbank, Buffer.from(JSON.stringify(donordetail)));
+        console.info('============= END : Create Donor-Bank Bag Details ===========');
+        }
+        else
+        {
+            throw new Error(`Cannot store the details`);
+        }
+    }
+    
     async createDonationDetails(ctx,bbid,donorid,transactionstring,bloodgroup,unit,cdate,edate,collectedby) {
         console.info('============= START : Create Donation Details ===========');
         let flag=true
@@ -90,26 +225,92 @@ class FabCar extends Contract {
         }
     }
 
-    async createDonorRegDetails(ctx, donorid,donorstring) {
-             console.info('============= START : Create Donation Details ===========');
+    async createBloodTestingDetails(ctx,test_id,tti_flag,test_date,bloodgroup,status,stored_location,transactionstring) {
+        console.info('============= START : Create Blood Testing Details ===========');
+        let flag=true
 
-            let donorstring1 = JSON.parse(donorstring.toString());
+        console.log("flag",flag);
+        if(flag)
+        {
+            const bloodtesting = {
+                tti_flag:tti_flag,
+                test_date: test_date,
+                bloodgroup: bloodgroup,
+                status:status,
+                stored_location:stored_location,
+                transactionstring:transactionstring,
+            };
+        await ctx.stub.putState(test_id, Buffer.from(JSON.stringify(bloodtesting)));
+        console.info('============= END : Create Blood Testing Details ===========');
+        }
+        else
+        {
+            throw new Error(`Cannot store the details`);
+        }
+    }
+
+    async createBloodTransfusionDetails(ctx,trans_id,blood_type,bloodgroup,patient_id,crossmatch_status,hospital_name,payment,trans_status) {
+             console.info('============= START : Create Transfusion Details ===========');
 
              let flag=true
              if(flag)
              {
-                const donordetail = {
-                    donorstring:donorstring, 
+                const transfusiondetails = {
+                blood_type:blood_type, 
+                bloodgroup: bloodgroup,
+                patient_id:patient_id,
+                crossmatch_status:crossmatch_status,
+                hospital_name:hospital_name,
+                payment:payment,
+                trans_status:trans_status,
                 };
-             await ctx.stub.putState(donorid, Buffer.from(JSON.stringify(donordetail)));
-             console.info('============= END : Create Donor Details ===========');
+             await ctx.stub.putState(trans_id, Buffer.from(JSON.stringify(transfusiondetails)));
+             console.info('============= END : Create Transfusion Details ===========');
              }
              else
              {
                  throw new Error(`Cannot store the details`);
              }
          }
+
     async queryDonationDetails(ctx, bbid) {
+        const donationBytes = await ctx.stub.getState(bbid); // get the car from chaincode state
+        if (!donationBytes || donationBytes.length === 0) {
+            throw new Error(`${bbid} does not exist`);
+        }
+        console.log(donationBytes.toString());
+        return donationBytes.toString();
+    }
+
+    async queryDonorBank(ctx, donorbank) {      
+        const donationBytes = await ctx.stub.getState(donorbank); // get the car from chaincode state
+        if (!donationBytes || donationBytes.length === 0) {
+           return false;
+        } 
+        console.log(donationBytes.toString());
+        return donationBytes.toString();
+    }
+
+
+    async queryCar(ctx, carNumber) {
+        const carAsBytes = await ctx.stub.getState(carNumber); // get the car from chaincode state
+        if (!carAsBytes || carAsBytes.length === 0) {
+            throw new Error(`${carNumber} does not exist`);
+        }
+        console.log(carAsBytes.toString());
+        return carAsBytes.toString();
+    }
+
+    async queryBloodTesting(ctx, bbid) {
+        const donationBytes = await ctx.stub.getState(bbid); // get the car from chaincode state
+        if (!donationBytes || donationBytes.length === 0) {
+            throw new Error(`${bbid} does not exist`);
+        }
+        console.log(donationBytes.toString());
+        return donationBytes.toString();
+    }
+
+    async queryTransfusion(ctx, bbid) {
         const donationBytes = await ctx.stub.getState(bbid); // get the car from chaincode state
         if (!donationBytes || donationBytes.length === 0) {
             throw new Error(`${bbid} does not exist`);
@@ -159,6 +360,34 @@ class FabCar extends Contract {
         }
     }
 
+    async changeLastDonatedDate(ctx, donorid, donateddate,nextdate) {
+        console.info('============= START : ChangeLastDonatedDate ===========');
+
+        const donorAsBytes = await ctx.stub.getState(donorid); // get the donor from chaincode state
+        if (!donorAsBytes || donorAsBytes.length === 0) {
+            throw new Error(`${donorid} does not exist`);
+        }
+        const donor = JSON.parse(donorAsBytes.toString());
+        donor.lastdonated = donateddate;
+        donor.nextdonation = nextdate;
+
+        await ctx.stub.putState(donorid, Buffer.from(JSON.stringify(donor)));
+        console.info('============= END : ChangeLastDonatedDate ===========');
+    }
+
+    async changeDonorBloodBankList(ctx, donorid, bb) {
+        console.info('============= START : ChangeLastDonatedDate ===========');
+
+        const donorAsBytes = await ctx.stub.getState(donorid); // get the car from chaincode state
+        if (!donorAsBytes || donorAsBytes.length === 0) {
+            throw new Error(`${donorid} does not exist`);
+        }
+        const donor = JSON.parse(donorAsBytes.toString());
+        donor.bloodbanks = bb;
+
+        await ctx.stub.putState(donorid, Buffer.from(JSON.stringify(donor)));
+        console.info('============= END : ChangeLastDonatedDate ===========');
+    }
     async changeCarOwner(ctx, carNumber, newOwner) {
         console.info('============= START : changeCarOwner ===========');
 

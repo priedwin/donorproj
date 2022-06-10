@@ -10,7 +10,7 @@ const { Gateway, Wallets } = require('fabric-network');
 const fs = require('fs');
 const path = require('path');
 
-async function saveDonorRegDetails(params) {
+async function saveDonorRegDetails(params,flag) {
     try {
         // load the network configuration
         const ccpPath = path.resolve(__dirname, '..', '..', 'test-network', 'organizations', 'peerOrganizations', 'org1.example.com', 'connection-org1.json');
@@ -38,11 +38,24 @@ async function saveDonorRegDetails(params) {
 
         // Get the contract from the network.
         const contract = network.getContract('fabcar');
-
         // Submit the specified transaction.
         // createCar transaction - requires 5 argument, ex: ('createCar', 'CAR12', 'Honda', 'Accord', 'Black', 'Tom')
         // changeCarOwner transaction - requires 2 args , ex: ('changeCarOwner', 'CAR12', 'Dave')
-        await contract.submitTransaction('createDonorRegDetails', params.donorid,params.donorstring);
+        if(flag==0)
+        {
+            // creation of donor entry
+        await contract.submitTransaction('createDonorRegDetails', params.donorid,params.lastdonated,params.bloodbanks,params.donorstring);
+        }
+        else if(flag==1)
+        {
+             // changing last donated and next donation dates
+        await contract.submitTransaction('changeLastDonatedDate', params.donorid,params.lastdonated,params.nextdonation);
+        }
+        else
+        {
+            //Changing blood bank list of donor
+            await contract.submitTransaction('changeDonorBloodBankList', params.donorid,params.bloodbanks);
+        }
         console.log('Transaction has been submitted');
 
         // Disconnect from the gateway.
